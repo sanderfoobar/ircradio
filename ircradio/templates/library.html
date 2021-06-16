@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Page Content -->
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="mt-4" style="margin-bottom: 2rem;">
+        Library for {{ name }}
+      </h1>
+
+      <div class="row">
+        <div class="col-lg-6">
+          <h5>By date</h5>
+          <pre style="font-size:12px;">{% for s in by_date %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.title}}
+{% endfor %}</pre>
+        </div>
+
+        <div class="col-lg-6">
+          <h5>By karma</h5>
+          <pre style="font-size:12px;">{% for s in by_karma %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.karma}}; {{s.title}}</a>
+{% endfor %}</pre>
+        </div>
+      </div>
+
+      <a href="/">
+        <button type="button" class="btn btn-primary btn-sm">Go back</button>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

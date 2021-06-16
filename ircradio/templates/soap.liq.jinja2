@@ -1,0 +1,49 @@
+#!/usr/bin/liquidsoap
+set("log.stdout", true)
+set("log.file",false)
+%include "cross.liq"
+
+# Allow requests from Telnet (Liquidsoap Requester)
+set("server.telnet", true)
+set("server.telnet.bind_addr", "{{ liquidsoap_host }}")
+set("server.telnet.port", {{ liquidsoap_port }})
+set("server.telnet.reverse_dns", false)
+
+# WOW's station track auto-playlist
+#+ randomized track playback from the playlist path
+#+ play a new random track each time LS performs select()
+#+ 90-second timeout on remote track preparation processes
+#+ 1.0-hour maximum file length (in case things "run away")
+#+ 0.5-hour default file length (in case things "run away")
+plist = playlist(
+  id="playlist",
+  length=30.0,
+  default_duration=30.0,
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "{{ dir_music }}"
+)
+
+# Request Queue from Telnet (Liquidsoap Requester)
+requests = request.queue(id="requests")
+
+# Start building the feed with music
+radio = plist
+
+# Add in our on-disk security
+radio = fallback(id="switcher",track_sensitive = true, [requests, radio, blank(duration=5.)])
+
+# uncomment to normalize the audio stream
+#radio = normalize(radio)
+
+# iTunes-style (so-called "dumb" - but good enough) crossfading
+full = smart_crossfade(start_next=8., fade_in=6., fade_out=6., width=2., conservative=true, radio)
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "{{ icecast2_bind_host }}", port = {{ icecast2_bind_port }},
+  icy_metadata="true", description="{{ liquidsoap_description }}",
+  password = "{{ icecast2_source_password }}", mount = "{{ icecast2_mount }}",
+  full)

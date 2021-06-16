@@ -1,0 +1,53 @@
+<icecast>
+    <location>Somewhere</location>
+    <admin>my@email.tld</admin>
+
+    <limits>
+        <clients>32</clients>
+        <sources>2</sources>
+        <queue-size>524288</queue-size>
+        <client-timeout>30</client-timeout>
+        <header-timeout>15</header-timeout>
+        <source-timeout>10</source-timeout>
+        <burst-on-connect>0</burst-on-connect>
+        <burst-size>65535</burst-size>
+    </limits>
+
+    <authentication>
+        <source-password>{{ source_password }}</source-password>
+        <relay-password>{{ relay_password }}</relay-password>  <!-- for livestreams -->
+        <admin-user>admin</admin-user>
+        <admin-password>{{ admin_password }}</admin-password>
+    </authentication>
+
+    <hostname>{{ hostname }}</hostname>
+
+    <listen-socket>
+        <bind-address>{{ icecast2_bind_host }}</bind-address>
+        <port>{{ icecast2_bind_port }}</port>
+    </listen-socket>
+
+    <http-headers>
+        <header name="Access-Control-Allow-Origin" value="*" />
+    </http-headers>
+
+    <fileserve>1</fileserve>
+
+    <paths>
+        <basedir>/usr/share/icecast2</basedir>
+        <logdir>{{ log_dir }}</logdir>
+        <webroot>/usr/share/icecast2/web</webroot>
+        <adminroot>/usr/share/icecast2/admin</adminroot>
+    </paths>
+
+    <logging>
+        <accesslog>icecast2_access.log</accesslog>
+        <errorlog>icecast2_error.log</errorlog>
+        <loglevel>3</loglevel> <!-- 4 Debug, 3 Info, 2 Warn, 1 Error -->
+        <logsize>10000</logsize> <!-- Max size of a logfile -->
+    </logging>
+
+    <security>
+        <chroot>0</chroot>
+    </security>
+</icecast>

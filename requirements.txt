@@ -1,0 +1,13 @@
+quart
+youtube-dl
+aiofiles
+aiohttp
+bottom
+tinytag
+peewee
+python-dateutil
+mutagen
+peewee
+youtube-dl
+quart
+psycopg2

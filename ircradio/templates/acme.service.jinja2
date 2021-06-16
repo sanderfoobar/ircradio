@@ -1,0 +1,17 @@
+[Unit]
+Description={{ description }}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User={{ user }}
+Group={{ group }}
+Environment="{{ env }}"
+StateDirectory={{ name | lower }}
+LogsDirectory={{ name | lower }}
+Type=simple
+ExecStart={{ path_executable }} {{ args_executable }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

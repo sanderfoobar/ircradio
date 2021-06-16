@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Page Content -->
+<div class="container">
+  <div class="row">
+    <!-- Post Content Column -->
+    <div class="col-lg-12">
+      <!-- Title -->
+      <h1 class="mt-4" style="margin-bottom: 2rem;">
+        IRC!Radio
+      </h1>
+      <p>Enjoy the music :)</p>
+      <hr>
+      <audio controls src="/{{ settings.icecast2_mount }}">Your browser does not support the<code>audio</code> element.</audio>
+      <hr>
+
+      <h4>Command list:</h4>
+      <pre style="font-size:12px;">!np         - current song
+!tune       - upvote song
+!boo        - downvote song
+!request    - search and queue a song by title
+!dj+        - add a YouTube ID to the radiostream
+!dj-        - remove a YouTube ID
+!ban+       - ban a YouTube ID and/or nickname
+!ban-       - unban a YouTube ID and/or nickname
+!skip       - skips current song
+!listeners  - show current amount of listeners
+!queue      - show queued up music
+!queue_user - queue a random song by user
+!search     - search for a title
+!stats      - stats
+      </pre>
+
+      <hr>
+      <div class="row">
+        <div class="col-md-3">
+          <h4>History</h4>
+          <a href="/history.txt">history.txt</a>
+        </div>
+
+        <div class="col-md-3">
+          <h4>Library
+            <small style="font-size:12px">(by user)</small>
+          </h4>
+          <form method="GET" action="/library">
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" id="name" name="name" placeholder="username...">
+              <div class="input-group-append">
+                <input class="btn btn-outline-secondary" type="submit" value="Search">
+              </div>
+            </div>
+
+          </form>
+        </div>
+        <div class="col-md-3"></div>
+      </div>
+      <hr>
+      <h4>IRC</h4>
+      <pre>{{ settings.irc_host }}:{{ settings.irc_port }}
+{{ settings.irc_channels | join(" ") }}
+      </pre>
+    </div>
+  </div>
+</div>
+{% endblock %}

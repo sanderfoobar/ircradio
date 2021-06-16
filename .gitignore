@@ -1,0 +1,6 @@
+.idea
+data/music/*.jpg
+data/music/*.webp
+data/music/*.ogg*
+__pycache__
+settings.py
