@@ -17,7 +17,7 @@
 
         <div class="col-lg-6">
           <h5>By karma</h5>
-          <pre style="font-size:12px;">{% for s in by_karma %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.karma}}; {{s.title}}</a>
+          <pre style="font-size:12px;">{% for s in by_karma %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.karma}} - {{s.title}}
 {% endfor %}</pre>
         </div>
       </div>
