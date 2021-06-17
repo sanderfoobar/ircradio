@@ -20,7 +20,7 @@ IRC!Radio aims to be minimalistic/small using:
 - !np         - current song
 - !tune       - upvote song
 - !boo        - downvote song
-- !request    - search and queue a song by title
+- !request    - search and queue a song by title or YouTube id
 - !dj+        - add a YouTube ID to the radiostream
 - !dj-        - remove a YouTube ID
 - !ban+       - ban a YouTube ID and/or nickname
