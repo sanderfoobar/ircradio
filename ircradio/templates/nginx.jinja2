@@ -24,7 +24,7 @@ server {
         autoindex    on;
     }
 
-    location ~ ^/$ {
+    location / {
         root /var/www/html/;
         proxy_pass http://{{ host }}:{{ port }};
         proxy_redirect     off;
