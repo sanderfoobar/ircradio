@@ -339,8 +339,10 @@ async def message(nick, target, message, **kwargs):
         target = nick
 
     msg = message
-    if msg.startswith(settings.irc_command_prefix):
-        msg = msg[len(settings.irc_command_prefix):]
+    if not msg.startswith(settings.irc_command_prefix):
+        return
+
+    msg = msg[len(settings.irc_command_prefix):]
 
     try:
         if nick not in settings.irc_admins_nicknames:
