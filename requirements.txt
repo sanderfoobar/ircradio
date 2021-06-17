@@ -8,6 +8,3 @@ peewee
 python-dateutil
 mutagen
 peewee
-youtube-dl
-quart
-psycopg2
