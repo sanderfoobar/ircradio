@@ -14,6 +14,25 @@ IRC!Radio aims to be minimalistic/small using:
 - Icecast2
 - Quart web framework
 
+## Command list
+
+```text
+- !np         - current song
+- !tune       - upvote song
+- !boo        - downvote song
+- !request    - search and queue a song by title
+- !dj+        - add a YouTube ID to the radiostream
+- !dj-        - remove a YouTube ID
+- !ban+       - ban a YouTube ID and/or nickname
+- !ban-       - unban a YouTube ID and/or nickname
+- !skip       - skips current song
+- !listeners  - show current amount of listeners
+- !queue      - show queued up music
+- !queue_user - queue a random song by user
+- !search     - search for a title
+- !stats      - stats
+```
+
 ## Ubuntu installation
 
 No docker. The following assumes you have a VPS somewhere with root access.
@@ -127,22 +146,3 @@ certbot --nginx
 ```
 
 Pick "Yes" for redirects.
-
-## Command list
-
-```text
-- !np         - current song
-- !tune       - upvote song
-- !boo        - downvote song
-- !request    - search and queue a song by title
-- !dj+        - add a YouTube ID to the radiostream
-- !dj-        - remove a YouTube ID
-- !ban+       - ban a YouTube ID and/or nickname
-- !ban-       - unban a YouTube ID and/or nickname
-- !skip       - skips current song
-- !listeners  - show current amount of listeners
-- !queue      - show queued up music
-- !queue_user - queue a random song by user
-- !search     - search for a title
-- !stats      - stats
-```
