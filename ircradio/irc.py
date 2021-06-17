@@ -121,7 +121,10 @@ class Commands:
             send_message(target=target, message="usage: !request <id>")
 
         needle = " ".join(args)
-        songs = Song.search(needle)
+        try:
+            songs = Song.search(needle)
+        except Exception as ex:
+            return await send_message(target, f"{ex}")
         if not songs:
             return await send_message(target, "Not found!")
 
