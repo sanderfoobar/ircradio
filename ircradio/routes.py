@@ -3,7 +3,7 @@
 
 from datetime import datetime
 from typing import Tuple, Optional
-from quart import request, render_template, abort
+from quart import request, render_template, abort, jsonify
 
 import settings
 from ircradio.factory import app
@@ -37,6 +37,52 @@ async def history():
 
     history_cache = [now, data]
     return data
+
+
+@app.route("/search")
+async def search():
+    # search json api endpoint
+    # e.g: /search?name=test&limit=5&offset=0
+    if not settings.enable_search_route:
+        abort(404)
+
+    from ircradio.models import Song
+    name = request.args.get("name")
+    limit = request.args.get("limit", '20')
+    offset = request.args.get("offset", '0')
+
+    try:
+        limit = int(limit)
+        offset = int(offset)
+    except:
+        limit = 50
+        offset = 0
+
+    if not name or len(name) <= 2:
+        abort(404)
+
+    if limit > 50:
+        limit = 50
+
+    name = f"%{name}%"
+
+    try:
+        q = Song.select()
+        q = q.where((Song.added_by ** name) | (Song.title ** name))
+        q = q.order_by(Song.date_added.desc())
+        q = q.limit(limit).offset(offset)
+        results = [{
+            "added_by": s.added_by,
+            "karma": s.karma,
+            "id": s.id,
+            "title": s.title,
+            "utube_id": s.utube_id,
+            "date_added": s.date_added.strftime("%Y-%m-%d")
+        } for s in q]
+    except:
+        return jsonify([])
+
+    return jsonify(results)
 
 
 @app.route("/library")

@@ -16,6 +16,8 @@ timezone = "Europe/Amsterdam"
 
 dir_music = os.environ.get("DIR_MUSIC", os.path.join(cwd, "data", "music"))
 
+enable_search_route = bool_env(os.environ.get("ENABLE_SEARCH_ROUTE", False))
+
 irc_admins_nicknames = ["dsc_"]
 irc_host = os.environ.get('IRC_HOST', 'localhost')
 irc_port = int(os.environ.get('IRC_PORT', 6667))
