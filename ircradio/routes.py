@@ -4,6 +4,8 @@
 from datetime import datetime
 from typing import Tuple, Optional
 from quart import request, render_template, abort, jsonify
+import asyncio
+import json
 
 import settings
 from ircradio.factory import app
@@ -108,3 +110,21 @@ async def user_library():
         by_karma = []
 
     return await render_template("library.html", name=name, by_date=by_date, by_karma=by_karma)
+
+
+@app.websocket("/ws")
++async def np():
+    while True:
+        """get current song from history"""
+        history = Radio.history()
+        val = ""
+        if not history:
+            val = f"Nothing is playing?!"
+        else:
+            song = history[0]
+            val = song.title
+
+        data = json.dumps({"now_playing": val})
+
+        await websocket.send(f"{data}")
+        await asyncio.sleep(5)
