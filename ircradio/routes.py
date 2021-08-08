@@ -113,7 +113,8 @@ async def user_library():
 
 
 @app.websocket("/ws")
-+async def np():
+async def np():
+    last_song = ""
     while True:
         """get current song from history"""
         history = Radio.history()
@@ -124,7 +125,9 @@ async def user_library():
             song = history[0]
             val = song.title
 
-        data = json.dumps({"now_playing": val})
+        if val != last_song:
+            data = json.dumps({"now_playing": val})
+            await websocket.send(f"{data}")
 
-        await websocket.send(f"{data}")
+        last_song = val
         await asyncio.sleep(5)
