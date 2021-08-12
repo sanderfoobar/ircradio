@@ -30,6 +30,26 @@
   <title>IRC!Radio</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  
+  <script>
+
+  var ws = new WebSocket('wss://' + document.domain + ':' + location.port + '/ws');
+
+  ws.onmessage = function (event) {
+    // console.log(event.data);
+    json = JSON.parse(event.data);
+    np = json.now_playing;
+    document.querySelector("#now_playing").innerText = np;
+    // console.log(np);
+    return false;
+  };
+
+  ws.onclose = function(event) {
+    console.log("WebSocket is closed now.");
+  };
+
+  </script>
+
 </head>
 
 <body>
