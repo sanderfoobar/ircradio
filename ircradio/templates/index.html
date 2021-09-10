@@ -41,12 +41,12 @@
           <a href="/history.txt">history.txt</a>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-5">
           <h4>Library
             <small style="font-size:12px">(by user)</small>
           </h4>
           <form method="GET" action="/library">
-            <div class="input-group mb-3">
+            <div class="input-group mb-3 style=no-gutters">
               <input type="text" class="form-control" id="name" name="name" placeholder="username...">
               <div class="input-group-append">
                 <input class="btn btn-outline-secondary" type="submit" value="Search">
@@ -55,8 +55,28 @@
 
           </form>
         </div>
-        <div class="col-md-3"></div>
       </div>
+      {% if ENABLE_SEARCH_ROUTE %}
+      <hr>
+      <div class="row">
+        <div class="col-md-8">
+          <h4>Quick Search
+            <small style="font-size:12px">(general)</small>
+          </h4>
+            <div class="input-group mb-3">   
+              <input type="text" class="form-control" id="general" name="general" placeholder="query...">
+            </div>
+        </div>
+        <div class="col-md-12">
+          <table class="table table-sm table-hover table-bordered" id="table" style="font-size:12px">
+            <thead>
+              <tbody style="">
+              </tbody>
+            </thead>
+          </table>
+        </div>
+      </div>
+      {% endif %}
       <hr>
       <h4>IRC</h4>
       <pre>{{ settings.irc_host }}:{{ settings.irc_port }}
@@ -65,4 +85,7 @@
     </div>
   </div>
 </div>
+
+<script src="static/search.js"></script>
+
 {% endblock %}
