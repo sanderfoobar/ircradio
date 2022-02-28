@@ -36,7 +36,7 @@ class YouTube:
 
         try:
             proc = await asyncio.create_subprocess_exec(
-                *["youtube-dl",
+                *["yt-dlp",
                     "--add-metadata",
                     "--write-all-thumbnails",
                     "--write-info-json",
@@ -132,7 +132,7 @@ class YouTube:
     async def update():
         pip_path = os.path.join(os.path.dirname(sys.executable), "pip")
         proc = await asyncio.create_subprocess_exec(
-            *[sys.executable, pip_path, "install", "--upgrade", "youtube-dl"],
+            *[sys.executable, pip_path, "install", "--upgrade", "yt-dlp"],
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()

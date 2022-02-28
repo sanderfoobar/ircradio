@@ -1,5 +1,5 @@
 quart
-youtube-dl
+yt-dlp
 aiofiles
 aiohttp
 bottom
