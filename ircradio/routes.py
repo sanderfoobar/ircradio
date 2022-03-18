@@ -131,3 +131,12 @@ async def np():
 
         last_song = val
         await asyncio.sleep(5)
+
+if settings.json_songs_route:
+    @app.route(settings.json_songs_route)
+    async def songs_json():
+        from ircradio.models import Song
+        data = []
+        for song in Song.select().filter(Song.banned == False):
+            data.append(song.to_json)
+        return jsonify(data)

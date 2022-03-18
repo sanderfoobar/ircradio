@@ -50,3 +50,4 @@ liquidsoap_iface = icecast2_mount.replace(".", "(dot)")
 liquidsoap_max_song_duration = 60 * 11  # seconds
 
 re_youtube = r"[a-zA-Z0-9_-]{11}$"
+json_songs_route = ""
