@@ -46,6 +46,8 @@
     // console.log(event.data);
     json = JSON.parse(event.data);
     np = json.now_playing;
+    document.querySelector("#prev_two").innerText = document.querySelector("#prev_one").innerText;
+    document.querySelector("#prev_one").innerText = document.querySelector("#now_playing").innerText;
     document.querySelector("#now_playing").innerText = np;
     // console.log(np);
     return false;
