@@ -4,7 +4,7 @@
 <div class="container">
   <div class="row">
     <!-- Post Content Column -->
-    <div class="col-lg-12">
+    <div class="col-lg-9">
       <!-- Title -->
       <h1 class="mt-4" style="margin-bottom: 2rem;">
         IRC!Radio
@@ -17,9 +17,11 @@
       <h3>Now playing: </h3>
       <div id="now_playing" style="padding-top:6px; margin-bottom:1.75rem;">Nothing here yet</div>
 
+      {% if SHOW_PREVIOUS_TRACKS %}
       <h5>Previous: </h5>
       <div id="prev_one" style="font-size:12px;">Nothing here yet</div>
       <div id="prev_two" style="font-size:12px;"></div>
+      {% endif %}
       <hr>
 
       <h4>Command list:</h4>
@@ -43,14 +45,14 @@
       <div class="row">
         <div class="col-md-3">
           <h4>History</h4>
-          <a href="/history.txt">history.txt</a>
+          <a href="/history.txt" target="_blank">View in new tab</a>
         </div>
 
         <div class="col-md-5">
-          <h4>Library
-            <small style="font-size:12px">(by user)</small>
+          <h4>View User Library
+            <small style="font-size:12px"></small>
           </h4>
-          <form method="GET" action="/library">
+          <form target="_blank" method="GET" action="/library">
             <div class="input-group mb-3 style=no-gutters">
               <input type="text" class="form-control" id="name" name="name" placeholder="username...">
               <div class="input-group-append">
