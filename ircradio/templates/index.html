@@ -17,9 +17,11 @@
       <h3>Now playing: </h3>
       <div id="now_playing" style="padding-top:6px; margin-bottom:1.75rem;">Nothing here yet</div>
 
+      {% if SHOW_PREVIOUS_TRACKS %}
       <h5>Previous: </h5>
       <div id="prev_one" style="font-size:12px;">Nothing here yet</div>
       <div id="prev_two" style="font-size:12px;"></div>
+      {% endif %}
       <hr>
 
       <h4>Command list:</h4>
