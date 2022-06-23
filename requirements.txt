@@ -4,7 +4,6 @@ aiofiles
 aiohttp
 bottom
 tinytag
-peewee
 python-dateutil
 mutagen
 peewee
