@@ -17,7 +17,7 @@ class YouTube:
         from ircradio.factory import app
         from ircradio.models import Song
 
-        output = f"{settings.dir_music}/{utube_id}.ogg"
+        output = f"{settings.dir_music}/{utube_id}"
         song = Song.by_uid(utube_id)
         if song:
             if not os.path.exists(output):
