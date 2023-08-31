@@ -130,7 +130,7 @@ class Commands:
         if len(songs) >= 2:
             random.shuffle(songs)
             await send_message(target, "Multiple found:")
-            for s in songs[:4]:
+            for s in songs[:8]:
                 await send_message(target, f"{s.utube_id} | {s.title}")
             return
 
