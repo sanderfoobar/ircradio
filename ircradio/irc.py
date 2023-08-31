@@ -90,9 +90,8 @@ class Commands:
             return await send_message(target, f"Nothing is playing?!")
         song = history[0]
 
-        if song.karma <= 9:
-            song.karma += 1
-            song.save()
+        song.karma += 1
+        song.save()
 
         msg = f"Rating for \"{song.title}\" is {song.karma}/10 .. PARTY ON!!!!"
         await send_message(target=target, message=msg)
