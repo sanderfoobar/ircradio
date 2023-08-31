@@ -44,7 +44,7 @@ class YouTube:
                     "--max-filesize", "30M",
                     "--extract-audio",
                     "--audio-format", "vorbis",
-                    "-o", f"{settings.dir_music}/%(id)s.ogg",
+                    "-o", f"{settings.dir_music}/%(id)s",
                     f"https://www.youtube.com/watch?v={utube_id}"],
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE)
@@ -116,7 +116,7 @@ class YouTube:
                 app.logger.warning(f"could not detect artist/title from metadata for {filepath}")
 
         return {
-            "name": f"{artist} - {title}",
+            "name": f"{title}",
             "data": metadata,
             "duration": duration,
             "path": filepath
