@@ -2,5 +2,6 @@
 data/music/*.jpg
 data/music/*.webp
 data/music/*.ogg*
+data/music/*.json
 __pycache__
 settings.py
