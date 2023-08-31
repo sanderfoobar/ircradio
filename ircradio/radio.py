@@ -150,6 +150,8 @@ class Radio:
     @staticmethod
     async def listeners():
         data: dict = await Radio.get_icecast_metadata()
+        if isinstance(data, list):
+            data = next(s for s in data if s['server_name'].endswith('wow.ogg'))
         if not data:
             return 0
         return data.get('listeners', 0)
