@@ -23,6 +23,7 @@ class Ban(pw.Model):
     class Meta:
         database = db
 
+
 class Song(pw.Model):
     id = pw.AutoField()
     date_added = pw.DateTimeField(default=datetime.now)
@@ -33,6 +34,17 @@ class Song(pw.Model):
     duration = pw.IntegerField()
     karma = pw.IntegerField(default=5, index=True)
     banned = pw.BooleanField(default=False)
+
+    @property
+    def to_json(self):
+        return {
+            "title": self.title,
+            "utube_id": self.utube_id,
+            "added_by": self.added_by,
+            "duration": self.duration,
+            "karma": self.karma,
+            "banned": self.banned
+        }
 
     @staticmethod
     def delete_song(utube_id: str) -> bool:
