@@ -36,6 +36,7 @@ irc_ignore_pms = False
 irc_command_prefix = "!"
 
 icecast2_hostname = "radio.wownero.com"
+icecast2_scheme = "https"
 icecast2_max_clients = 32
 icecast2_bind_host = "127.0.0.1"
 icecast2_bind_port = 24100
