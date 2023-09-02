@@ -80,6 +80,13 @@ class YouTube:
         from ircradio.factory import app
         import mutagen
 
+        if not filepath.endswith('.ogg'):
+            filepath = filepath + ".ogg"
+
+        if not os.path.exists(filepath):
+            app.logger.error(f"path does not exist: {filepath}")
+            return
+
         try:
             metadata = mutagen.File(filepath)
         except Exception as ex:
