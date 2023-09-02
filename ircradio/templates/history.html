@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Page Content -->
+<div class="container">
+
+  <div class="row">
+    <div class="col-lg-8">
+      <h5>History</h5>
+      <pre style="color:white;font-family:monospace;font-size:14px;">{% for s in songs %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.title}}
+{% endfor %}</pre>
+    </div>
+  </div>
+
+  {% include 'footer.html' %}
+</div>
+
+
+{% endblock %}

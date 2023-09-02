@@ -1,7 +1,12 @@
+asyncio-multisubscriber-queue
 quart
+quart-session
+quart-keycloak
 yt-dlp
 aiofiles
 aiohttp
+aiocache
+redis
 bottom
 tinytag
 python-dateutil

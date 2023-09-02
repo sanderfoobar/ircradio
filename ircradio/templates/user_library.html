@@ -11,13 +11,13 @@
       <div class="row">
         <div class="col-lg-6">
           <h5>By date</h5>
-          <pre style="font-size:12px;">{% for s in by_date %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.title}}
+          <pre style="color:white;font-family:monospace;font-size:14px;">{% for s in by_date %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.title}}
 {% endfor %}</pre>
         </div>
 
         <div class="col-lg-6">
           <h5>By karma</h5>
-          <pre style="font-size:12px;">{% for s in by_karma %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.karma}} - {{s.title}}
+          <pre style="color:white;font-family:monospace;font-size:14px;">{% for s in by_karma %}<a target="_blank" href="https://www.youtube.com/watch?v={{s.utube_id}}">{{s.utube_id}}</a> {{s.karma}} - {{s.title}}
 {% endfor %}</pre>
         </div>
       </div>
@@ -27,5 +27,7 @@
       </a>
     </div>
   </div>
+
+  {% include 'footer.html' %}
 </div>
 {% endblock %}

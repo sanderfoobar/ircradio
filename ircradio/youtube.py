@@ -29,9 +29,7 @@ class YouTube:
         if os.path.exists(output):
             song = Song.by_uid(utube_id)
             if not song:
-                # exists on disk but not in db; add to db
-                return Song.from_filepath(output)
-
+                raise Exception("exists on disk but not in db")
             raise Exception("Song already exists.")
 
         try:

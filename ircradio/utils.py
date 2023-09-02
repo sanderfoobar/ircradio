@@ -11,11 +11,16 @@ import time
 import asyncio
 from asyncio.subprocess import Process
 from io import TextIOWrapper
+from dataclasses import dataclass
 
+import mutagen
 import aiofiles
 import aiohttp
 import jinja2
+from aiocache import cached, Cache
+from aiocache.serializers import PickleSerializer
 from jinja2 import Environment, PackageLoader, select_autoescape
+from quart import current_app
 
 import settings
 
@@ -140,34 +145,6 @@ def systemd_servicefile(
     return template.encode()
 
 
-def liquidsoap_version():
-    ls = shutil.which("liquidsoap")
-    f = os.popen(f"{ls} --version 2>/dev/null").read()
-    if not f:
-        print("please install liquidsoap\n\napt install -y liquidsoap")
-        sys.exit()
-
-    f = f.lower()
-    match = re.search(r"liquidsoap (\d+.\d+.\d+)", f)
-    if not match:
-        return
-    return match.groups()[0]
-
-
-def liquidsoap_check_symlink():
-    msg = """
-    Due to a bug you need to create this symlink:
-    
-    $ sudo ln -s /usr/share/liquidsoap/ /usr/share/liquidsoap/1.4.1
-    
-    info: https://github.com/savonet/liquidsoap/issues/1224
-    """
-    version = liquidsoap_version()
-    if not os.path.exists(f"/usr/share/liquidsoap/{version}"):
-        print(msg)
-        sys.exit()
-
-
 async def httpget(url: str, json=True, timeout: int = 5, raise_for_status=True, verify_tls=True):
     headers = {"User-Agent": random_agent()}
     opts = {"timeout": aiohttp.ClientTimeout(total=timeout)}
@@ -184,27 +161,8 @@ async def httpget(url: str, json=True, timeout: int = 5, raise_for_status=True, 
 
 
 def random_agent():
-    from ircradio.factory import user_agents
+    from ircradio import user_agents
     return random.choice(user_agents)
-
-
-class Price:
-    def __init__(self):
-        self.usd = 0.3
-
-    def calculate(self):
-        pass
-
-    async def wownero_usd_price_loop(self):
-        while True:
-            self.usd = await Price.wownero_usd_price()
-            asyncio.sleep(1200)
-
-    @staticmethod
-    async def wownero_usd_price():
-        url = "https://api.coingecko.com/api/v3/simple/price?ids=wownero&vs_currencies=usd"
-        blob = await httpget(url, json=True)
-        return blob.get('usd', 0)
 
 
 def print_banner():
@@ -214,3 +172,82 @@ def print_banner():
     ▐█▌▐█•█▌▐███▌▐█•█▌▐█ ▪▐▌██. ██ ▐█▌▐█▌.▐▌
     ▀▀▀.▀  ▀·▀▀▀ .▀  ▀ ▀  ▀ ▀▀▀▀▀• ▀▀▀ ▀█▄▀▪\033[0m
     """.strip())
+
+
+async def radio_update_task_run_forever():
+    while True:
+        sleep_secs = 15
+        try:
+            sleep_secs = await radio_update_task(sleep_secs)
+            await asyncio.sleep(sleep_secs)
+        except Exception as ex:
+            current_app.logger.error(ex)
+            await asyncio.sleep(sleep_secs)
+
+
+async def radio_update_task(sleep_secs) -> int:
+    from ircradio.factory import websocket_status_bus
+    from ircradio.station import SongDataclass
+    from ircradio.radio import Radio
+    if len(websocket_status_bus.subscribers) >= 1:
+        sleep_secs = 4
+
+    blob = {}
+    radio_stations = list(settings.radio_stations.values())
+    # radio_stations = radio_stations[1:]
+    radio_stations = radio_stations[:2]
+
+    for radio_station in radio_stations:
+        radio_station.song = None
+
+        data = {
+            'added_by': 'system',
+            'image': None,
+            'duration': None,
+            'progress': None,
+        }
+
+        np = await radio_station.np()
+        if np:
+            listeners = await radio_station.get_listeners()
+            if listeners is not None:
+                radio_station.listeners = listeners
+
+            data['title'] = np.title_cleaned
+            data['karma'] = np.karma
+            data['utube_id'] = np.utube_id
+            data['image'] = np.image()
+            data['duration'] = np.duration
+            data['added_by'] = np.added_by
+
+            time_status = np.time_status()
+            if time_status:
+                a, b = time_status
+                pct = percentage(a.seconds, b.seconds)
+                if pct >= 100:
+                    pct = 100
+                data['progress'] = int(pct)
+                data['progress_str'] = " / ".join(map(str, time_status))
+
+            radio_station.song = SongDataclass(**data)
+            blob[radio_station.id] = radio_station
+
+    if blob:
+        await websocket_status_bus.put(blob)
+
+    return sleep_secs
+
+
+@cached(ttl=3600, cache=Cache.MEMORY,
+        key_builder=lambda *args, **kw: f"mutagen_file_{args[1]}",
+        serializer=PickleSerializer())
+async def mutagen_file(path):
+    from quart import current_app
+    if current_app:
+        return await current_app.sync_to_async(mutagen.File)(path)
+    else:
+        return mutagen.File(path)
+
+
+def percentage(part, whole):
+    return 100 * float(part)/float(whole)

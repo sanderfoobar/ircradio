@@ -9,46 +9,150 @@ def bool_env(val):
     return val is True or (isinstance(val, str) and (val.lower() == 'true' or val == '1'))
 
 
-debug = True
+debug = False
 host = "127.0.0.1"
 port = 2600
 timezone = "Europe/Amsterdam"
 
+redis_uri = os.environ.get('REDIS_URI', 'redis://localhost:6379')
+
 dir_music = os.environ.get("DIR_MUSIC", os.path.join(cwd, "data", "music"))
+dir_meta = os.environ.get("DIR_MUSIC", os.path.join(cwd, "data", "music_metadata"))
+if not os.path.exists(dir_music):
+    os.mkdir(dir_music)
+if not os.path.exists(dir_meta):
+    os.mkdir(dir_meta)
 
-enable_search_route = bool_env(os.environ.get("ENABLE_SEARCH_ROUTE", False))
-show_previous_tracks = bool_env(os.environ.get("SHOW_PREVIOUS_TRACKS", False))
-
-irc_admins_nicknames = ["dsc_"]
-irc_host = os.environ.get('IRC_HOST', 'localhost')
+irc_admins_nicknames = ["dsc_", "qvqc", "lza_menace", "wowario", "scoobybejesus", "JockChamp[m]", "wowario[m]"]
+# irc_host = os.environ.get('IRC_HOST', 'irc.OFTC.net')
+irc_host = os.environ.get('IRC_HOST', '127.0.0.1')
 irc_port = int(os.environ.get('IRC_PORT', 6667))
 irc_ssl = bool_env(os.environ.get('IRC_SSL', False))  # untested
-irc_nick = os.environ.get('IRC_NICK', 'DJIRC')
-irc_channels = os.environ.get('IRC_CHANNELS', '#mychannel').split()
-irc_realname = os.environ.get('IRC_REALNAME', 'DJIRC')
+irc_nick = os.environ.get('IRC_NICK', 'DjWow')
+irc_channels = os.environ.get('IRC_CHANNELS', '#wownero-music').split()
+irc_realname = os.environ.get('IRC_REALNAME', 'DjWow')
 irc_ignore_pms = False
 irc_command_prefix = "!"
 
-icecast2_hostname = "localhost"
+icecast2_hostname = "radio.wownero.com"
 icecast2_max_clients = 32
 icecast2_bind_host = "127.0.0.1"
 icecast2_bind_port = 24100
-icecast2_mount = "radio.ogg"
-icecast2_source_password = "changeme"
-icecast2_admin_password = "changeme"
-icecast2_relay_password = "changeme"  # for livestreams
+icecast2_mount = "wow.ogg"
+icecast2_source_password = ""
+icecast2_admin_password = ""
+icecast2_relay_password = ""  # for livestreams
 icecast2_live_mount = "live.ogg"
 icecast2_logdir = "/var/log/icecast2/"
 
 liquidsoap_host = "127.0.0.1"
 liquidsoap_port = 7555  # telnet
-liquidsoap_description = "IRC!Radio"
+liquidsoap_description = "WOW!Radio"
 liquidsoap_samplerate = 48000
 liquidsoap_bitrate = 164  # youtube is max 164kbps
 liquidsoap_crossfades = False  # not implemented yet
 liquidsoap_normalize = False  # not implemented yet
 liquidsoap_iface = icecast2_mount.replace(".", "(dot)")
-liquidsoap_max_song_duration = 60 * 11  # seconds
+liquidsoap_max_song_duration = 60 * 14  # seconds
 
 re_youtube = r"[a-zA-Z0-9_-]{11}$"
-json_songs_route = ""
+
+openid_keycloak_config = {
+    "client_id": "",
+    "client_secret": "",
+    "configuration": "https://login.wownero.com/realms/master/.well-known/openid-configuration"
+}
+
+from ircradio.station import Station
+radio_stations = {
+    "wow": Station(
+        id="wow",
+        music_dir=dir_music,
+        mount_point="wow.ogg",
+        request_id="pmain",
+        title="Radio!WOW",
+        description="random programming",
+        image="wow.jpg"
+    ),
+    "berlin": Station(
+        id="berlin",
+        music_dir="/home/radio/mixes/berlin",
+        mount_point="berlin.ogg",
+        request_id="pberlin",
+        title="Berlin",
+        description="Progressive, techno, minimal, tech-trance",
+        image="berlin.jpg"
+    ),
+    "dnb": Station(
+        id="dnb",
+        music_dir="/home/radio/mixes/dnb",
+        mount_point="dnb.ogg",
+        request_id="pdnb",
+        title="Drum and Bass",
+        description="Big up selecta",
+        image="dnb.jpg"
+    ),
+    "trance": Station(
+        id="trance",
+        music_dir="/home/radio/mixes/trance",
+        mount_point="trance.ogg",
+        request_id="ptrance",
+        title="Trance",
+        description="du-du-du",
+        image="trance.jpg"
+    ),
+    "chiptune": Station(
+        id="chiptune",
+        music_dir="/home/radio/mixes/chiptune",
+        mount_point="chiptune.ogg",
+        request_id="pchiptune",
+        title="Chiptune",
+        description="8-bit, 16-bit, PSG sound chips, consoles, handhelds, demoscene",
+        image="chiptune.webp"
+    ),
+    "anju": Station(
+        id="anju",
+        music_dir="/home/radio/mixes/anjunadeep",
+        mount_point="anjunadeep.ogg",
+        request_id="panjunadeep",
+        title="Anjunadeep",
+        description="a collection of the anjunadeep edition podcasts",
+        image="anjunadeep.jpg"
+    ),
+    "breaks": Station(
+        id="breaks",
+        music_dir="/home/radio/mixes/breaks",
+        mount_point="breaks.ogg",
+        request_id="pbreaks",
+        title="Breakbeat",
+        description="Breakbeat, breakstep, Florida breaks",
+        image="breakbeat.webp"
+    ),
+    "raves": Station(
+        id="raves",
+        music_dir="/home/radio/mixes/raves",
+        mount_point="raves.ogg",
+        title="90s rave",
+        request_id="praves",
+        description="Abandoned warehouses, empty apartment lofts, under bridges, open fields",
+        image="raves.jpg"
+    ),
+    "weed": Station(
+        id="weed",
+        music_dir="/home/radio/mixes/weed",
+        mount_point="weed.ogg",
+        title="Chill vibes 🌿",
+        description="psybient, psychill, psydub, psyduck <img width=32px height=48px src=\"/static/psyduck.png\">",
+        image="weed.jpg",
+        request_id="pweed"
+    ),
+    "rock": Station(
+        id="rock",
+        music_dir="/home/radio/mixes/rock",
+        mount_point="rock.ogg",
+        request_id="prock",
+        title="Rock 🎸",
+        description="Rock & metal",
+        image="rock.webp"
+    )
+}

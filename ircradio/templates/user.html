@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Page Content -->
+<div class="container">
+  <div class="row">
+    <div class="col-md-5">
+      <h4>View User Library
+        <small style="font-size:12px"></small>
+      </h4>
+      <form target="_blank" method="GET" action="/library">
+        <div class="input-group mb-3 style=no-gutters">
+          <input type="text" class="form-control" id="name" name="name" placeholder="username...">
+          <div class="input-group-append">
+            <input class="btn btn-outline-secondary" type="submit" value="Search">
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  {% include 'footer.html' %}
+</div>
+
+{% endblock %}

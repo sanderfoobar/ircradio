@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <!--
-░░░░░░░█▐▓▓░████▄▄▄█▀▄▓▓▓▌█ very website
+░░░░░░░█▐▓▓░████▄▄▄█▀▄▓▓▓▌█ very radio
 ░░░░░▄█▌▀▄▓▓▄▄▄▄▀▀▀▄▓▓▓▓▓▌█
 ░░░▄█▀▀▄▓█▓▓▓▓▓▓▓▓▓▓▓▓▀░▓▌█
 ░░█▀▄▓▓▓███▓▓▓███▓▓▓▄░░▄▓▐█▌ such html
@@ -10,10 +10,11 @@
 █▌███▓▓▓▓▓▓▓▓▐░░▄▓▓███▓▓▓▄▀▐█
 █▐█▓▀░░▀▓▓▓▓▓▓▓▓▓██████▓▓▓▓▐█
 ▌▓▄▌▀░▀░▐▀█▄▓▓██████████▓▓▓▌█▌
-▌▓▓▓▄▄▀▀▓▓▓▀▓▓▓▓▓▓▓▓█▓█▓█▓▓▌█▌ many music
+▌▓▓▓▄▄▀▀▓▓▓▀▓▓▓▓▓▓▓▓█▓█▓█▓▓▌█▌ much music
 █▐▓▓▓▓▓▓▄▄▄▓▓▓▓▓▓█▓█▓█▓█▓▓▓▐█
 -->
 <head>
+  <title>IRC!Radio</title>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,39 +28,22 @@
   <meta name="application-name" content="IRC!Radio">
   <meta name="msapplication-TileColor" content="#da532c">
   <meta name="description" content="IRC!Radio"/>
-  <title>IRC!Radio</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-  {% if ENABLE_SEARCH_ROUTE or SHOW_PREVIOUS_TRACKS %}
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"></link>
-
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-  {% endif %}
-  
-  <script>
-
-  var ws = new WebSocket('wss://' + document.domain + ':' + location.port + '/ws');
-
-  ws.onmessage = function (event) {
-    // console.log(event.data);
-    json = JSON.parse(event.data);
-    np = json.now_playing;
-    document.querySelector("#prev_two").innerText = document.querySelector("#prev_one").innerText;
-    document.querySelector("#prev_one").innerText = document.querySelector("#now_playing").innerText;
-    document.querySelector("#now_playing").innerText = np;
-    // console.log(np);
-    return false;
-  };
-
-  ws.onclose = function(event) {
-    console.log("WebSocket is closed now.");
-  };
-
-  </script>
-
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vinorodrigues/bootstrap-dark@0.6.1/dist/bootstrap-dark.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
+
+<div class="hero px-3 py-3 pt-md-4 pb-md-3 mx-auto text-center">
+  <a href="/" style="color: inherit; text-decoration: none;">
+  <h1 class="display-4 d-inline-flex">Radio!WOW</h1>
+    </a>
+  <p class="lead">Enjoy the music :)</p>
+</div>
 
 <body>
 {% block content %} {% endblock %}

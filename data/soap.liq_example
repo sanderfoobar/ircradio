@@ -1,0 +1,175 @@
+#!/usr/bin/liquidsoap
+set("log.stdout", true)
+set("log.file",false)
+#%include "cross.liq"
+
+# Allow requests from Telnet (Liquidsoap Requester)
+set("server.telnet", true)
+set("server.telnet.bind_addr", "127.0.0.1")
+set("server.telnet.port", 7555)
+set("server.telnet.reverse_dns", false)
+
+
+pmain = playlist(
+  id="playlist",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/ircradio/data/music"
+)
+
+
+# ==== ANJUNADEEP
+panjunadeep = playlist(
+  id="panjunadeep",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/anjunadeep/"
+)
+
+# ==== BERLIN
+pberlin = playlist(
+  id="berlin",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/berlin/"
+)
+
+# ==== BREAKBEAT
+pbreaks = playlist(
+  id="breaks",
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/breakbeat/"
+)
+
+# ==== DNB
+pdnb = playlist(
+  id="dnb",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/dnb/"
+)
+
+# ==== RAVES
+praves = playlist(
+  id="raves",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/raves/"
+)
+
+# ==== TRANCE
+ptrance = playlist(
+  id="trance",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/trance/"
+)
+
+# ==== WEED
+pweed = playlist(
+  id="weed",
+  timeout=90.0,
+  mode="random",
+  reload=300,
+  reload_mode="seconds",
+  mime_type="audio/ogg",
+  "/home/radio/mixes/weed/"
+)
+
+req_pmain = request.queue(id="pmain")
+req_panjunadeep = request.queue(id="panjunadeep")
+req_pberlin = request.queue(id="pberlin")
+req_pbreaks = request.queue(id="pbreaks")
+req_pdnb = request.queue(id="pdnb")
+req_praves = request.queue(id="praves")
+req_ptrance = request.queue(id="ptrance")
+req_pweed = request.queue(id="pweed")
+
+pmain        = fallback(id="switcher",track_sensitive = true, [req_pmain, pmain, blank(duration=5.)])
+panjunadeep		= fallback(id="switcher",track_sensitive = true, [req_panjunadeep, panjunadeep, blank(duration=5.)])
+pberlin		= fallback(id="switcher",track_sensitive = true, [req_pberlin, pberlin, blank(duration=5.)])
+pbreaks		= fallback(id="switcher",track_sensitive = true, [req_pbreaks, pbreaks, blank(duration=5.)])
+pdnb		= fallback(id="switcher",track_sensitive = true, [req_pdnb, pdnb, blank(duration=5.)])
+praves		= fallback(id="switcher",track_sensitive = true, [req_praves, praves, blank(duration=5.)])
+ptrance		= fallback(id="switcher",track_sensitive = true, [req_ptrance, ptrance, blank(duration=5.)])
+pweed		= fallback(id="switcher",track_sensitive = true, [req_pweed, pweed, blank(duration=5.)])
+
+# iTunes-style (so-called "dumb" - but good enough) crossfading
+pmain_crossed = crossfade(pmain)
+pmain_crossed = mksafe(pmain_crossed)
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio",
+  password = "lel", mount = "wow.ogg",
+  pmain_crossed)
+
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Anjunadeep",
+  password = "lel", mount = "anjunadeep.ogg",
+  panjunadeep)
+    
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Berlin",
+  password = "lel", mount = "berlin.ogg",
+  pberlin)
+    
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Breakbeat",
+  password = "lel", mount = "breaks.ogg",
+  pbreaks)
+    
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Dnb",
+  password = "lel", mount = "dnb.ogg",
+  pdnb)
+    
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Raves",
+  password = "lel", mount = "raves.ogg",
+  praves)
+    
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Trance",
+  password = "lel", mount = "trance.ogg",
+  ptrance)
+    
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
+  host = "10.7.0.3", port = 24100,
+  icy_metadata="true", description="WOW!Radio | Weed",
+  password = "lel", mount = "weed.ogg",
+  pweed)

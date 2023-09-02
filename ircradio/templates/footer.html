@@ -1,0 +1,24 @@
+<footer class="pt-4 my-md-5 pt-md-5 border-top">
+  <div class="row">
+    <div class="col-12 col-md">
+      <img class="mb-2" src="{{ url_for('static', filename='wow.png') }}" alt="" width="24" height="24">
+      <small class="d-block mb-3 text-muted">IRC!Radio</small>
+    </div>
+    <div class="col-4 col-md">
+      <h5>Menu</h5>
+      <ul class="list-unstyled text-small">
+        <li><a class="text-muted" href=" {{ url_for('login') }} ">Login</a></li>
+        <li><a class="text-muted" href=" {{ url_for('history') }} ">History</a></li>
+        <li><a class="text-muted" href=" {{ url_for('user_library') }} ">User Library</a></li>
+        <li><a class="text-muted" href=" {{ url_for('request_song') }} ">Request</a></li>
+        <li><a class="text-muted" href="https://git.wownero.com/dsc/ircradio">Source</a></li>
+      </ul>
+    </div>
+
+    <div class="col-4 col-md">
+    </div>
+
+    <div class="col-4 col-md">
+    </div>
+  </div>
+</footer>

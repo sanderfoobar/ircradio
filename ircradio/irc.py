@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2021, dsc@xmr.pm
-
+import sys
 from typing import List, Optional
 import os
 import time
@@ -8,12 +8,15 @@ import asyncio
 import random
 
 from ircradio.factory import irc_bot as bot
-from ircradio.radio import Radio
+from ircradio.station import Station
 from ircradio.youtube import YouTube
 import settings
+from settings import radio_stations
 
-
+radio_default = radio_stations["wow"]
 msg_queue = asyncio.Queue()
+YT_DLP_LOCK = asyncio.Lock()
+DU_LOCK = asyncio.Lock()
 
 
 async def message_worker():
@@ -35,11 +38,14 @@ async def connect(**kwargs):
     bot.send('NICK', nick=settings.irc_nick)
     bot.send('USER', user=settings.irc_nick, realname=settings.irc_realname)
 
-    # Don't try to join channels until server sent MOTD
+    # @TODO: get rid of this nonsense after a while
+    args = {"return_when": asyncio.FIRST_COMPLETED}
+    if sys.version_info.major == 3 and sys.version_info.minor < 10:
+        args["loop"] = bot.loop
+
     done, pending = await asyncio.wait(
         [bot.wait("RPL_ENDOFMOTD"), bot.wait("ERR_NOMOTD")],
-        loop=bot.loop,
-        return_when=asyncio.FIRST_COMPLETED
+        **args
     )
 
     # Cancel whichever waiter's event didn't come in.
@@ -66,29 +72,42 @@ def reconnect(**kwargs):
 
 
 class Commands:
-    LOOKUP = ['np', 'tune', 'boo', 'request', 'dj',
+    LOOKUP = ['np', 'tune', 'boo', 'request', 'dj', 'url', 'urls',
               'skip', 'listeners', 'queue',
-              'queue_user', 'pop', 'search', 'stats',
+              'queue_user', 'pop', 'search', 'searchq', 'stats',
               'rename', 'ban', 'whoami']
 
     @staticmethod
     async def np(*args, target=None, nick=None, **kwargs):
         """current song"""
-        history = Radio.history()
-        if not history:
+        radio_station = await Commands._parse_radio_station(args, target)
+        if not radio_station:
+            return
+        song = await radio_station.np()
+        if not song:
             return await send_message(target, f"Nothing is playing?!")
-        song = history[0]
 
-        np = f"Now playing: {song.title} (rating: {song.karma}/10; submitter: {song.added_by}; id: {song.utube_id})"
-        await send_message(target=target, message=np)
+        np = "Now playing"
+        if radio_station.id != "wow":
+            np += f" @{radio_station.id}"
+
+        message = f"{np}: {song.title_cleaned}"
+
+        if song.id:
+            message += f" (rating: {song.karma}/10; by: {song.added_by}; id: {song.utube_id})"
+
+        time_status_str = song.time_status_str()
+        if time_status_str:
+            message += f" {time_status_str}"
+
+        await send_message(target=target, message=message)
 
     @staticmethod
     async def tune(*args, target=None, nick=None, **kwargs):
-        """upvote song"""
-        history = Radio.history()
-        if not history:
+        """upvote song, only wow supported, not mixes"""
+        song = await radio_default.np()
+        if not song:
             return await send_message(target, f"Nothing is playing?!")
-        song = history[0]
 
         song.karma += 1
         song.save()
@@ -99,10 +118,9 @@ class Commands:
     @staticmethod
     async def boo(*args, target=None, nick=None, **kwargs):
         """downvote song"""
-        history = Radio.history()
-        if not history:
+        song = await radio_default.np()
+        if not song:
             return await send_message(target, f"Nothing is playing?!")
-        song = history[0]
 
         if song.karma >= 1:
             song.karma -= 1
@@ -115,9 +133,8 @@ class Commands:
     async def request(*args, target=None, nick=None, **kwargs):
         """request a song by title or YouTube id"""
         from ircradio.models import Song
-
         if not args:
-            send_message(target=target, message="usage: !request <id>")
+            await send_message(target=target, message="usage: !request <id>")
 
         needle = " ".join(args)
         try:
@@ -135,35 +152,75 @@ class Commands:
             return
 
         song = songs[0]
+        await radio_default.queue_push(song.filepath)
         msg = f"Added {song.title} to the queue"
-        Radio.queue(song)
+
         return await send_message(target, msg)
 
     @staticmethod
     async def search(*args, target=None, nick=None, **kwargs):
+        from ircradio.models import Song
+        return await Commands._search(*args, target=target, nick=nick, **kwargs)
+
+    @staticmethod
+    async def searchq(*args, target=None, nick=None, **kwargs):
+        from ircradio.models import Song
+        return await Commands._search(*args, target=target, nick=nick, report_quality=True, **kwargs)
+
+    @staticmethod
+    async def _search(*args, target=None, nick=None, **kwargs) -> Optional[List['Song']]:
         """search for a title"""
         from ircradio.models import Song
 
         if not args:
             return await send_message(target=target, message="usage: !search <id>")
 
+        report_quality = kwargs.get('report_quality')
         needle = " ".join(args)
+
+        # https://git.wownero.com/dsc/ircradio/issues/1
+        needle_2nd = None
+        if "|" in needle:
+            spl = needle.split('|', 1)
+            a = spl[0].strip()
+            b = spl[1].strip()
+            needle = a
+            needle_2nd = b
+
         songs = Song.search(needle)
         if not songs:
             return await send_message(target, "No song(s) found!")
 
-        if len(songs) == 1:
-            song = songs[0]
-            await send_message(target, f"{song.utube_id} | {song.title}")
-        else:
-            random.shuffle(songs)
+        if songs and needle_2nd:
+            songs = [s for s in songs if needle_2nd in s.title.lower()]
+
+        len_songs = len(songs)
+        max_songs = 6
+        moar = len_songs > max_songs
+        if len_songs > 1:
             await send_message(target, "Multiple found:")
-            for s in songs[:4]:
-                await send_message(target, f"{s.utube_id} | {s.title}")
+
+        random.shuffle(songs)
+
+        for s in songs[:max_songs]:
+            msg = f"{s.utube_id} | {s.title}"
+            await s.scan(s.path or s.filepath)
+
+            if report_quality and s.meta:
+                if s.meta.bitrate:
+                    msg += f" ({s.meta.bitrate / 1000}kbps)"
+                if s.meta.channels:
+                    msg += f" (channels: {s.meta.channels}) "
+                if s.meta.sample_rate:
+                    msg += f" (sample_rate: {s.meta.sample_rate}) "
+            await send_message(target, msg)
+
+        if moar:
+            await send_message(target, "[...]")
 
     @staticmethod
     async def dj(*args, target=None, nick=None, **kwargs):
-        """add (or remove) a YouTube ID to the radiostream"""
+        """add (or remove) a YouTube ID to the default radio"""
         from ircradio.models import Song
         if not args or args[0] not in ["-", "+"]:
             return await send_message(target, "usage: dj+ <youtube_id>")
@@ -174,12 +231,13 @@ class Commands:
             return await send_message(target, "YouTube ID not valid.")
 
         if add:
-            try:
-                await send_message(target, f"Scheduled download for '{utube_id}'")
-                song = await YouTube.download(utube_id, added_by=nick)
-                await send_message(target, f"'{song.title}' added")
-            except Exception as ex:
-                return await send_message(target, f"Download '{utube_id}' failed; {ex}")
+            async with YT_DLP_LOCK:
+                try:
+                    await send_message(target, f"Scheduled download for '{utube_id}'")
+                    song = await YouTube.download(utube_id, added_by=nick)
+                    await send_message(target, f"'{song.title}' added")
+                except Exception as ex:
+                    return await send_message(target, f"Download '{utube_id}' failed; {ex}")
         else:
             try:
                 Song.delete_song(utube_id)
@@ -191,43 +249,64 @@ class Commands:
     async def skip(*args, target=None, nick=None, **kwargs):
         """skips current song"""
         from ircradio.factory import app
+        radio_station = await Commands._parse_radio_station(args, target)
+        if not radio_station:
+            return
+
+        # song = radio_station.np()
+        # if not song:
+        #     app.logger.error(f"nothing is playing?")
+        #     return await send_message(target=target, message="Nothing is playing ?!")
 
         try:
-            Radio.skip()
+            await radio_station.skip()
         except Exception as ex:
             app.logger.error(f"{ex}")
-            return await send_message(target=target, message="Error")
+            return await send_message(target=target, message="Nothing is playing ?!")
 
-        await send_message(target, message="Song skipped. Booo! >:|")
+        if radio_station.id == "wow":
+            _type = "Song"
+        else:
+            _type = "Mix"
+
+        await send_message(target, message=f"{_type} skipped. Booo! >:|")
 
     @staticmethod
     async def listeners(*args, target=None, nick=None, **kwargs):
         """current amount of listeners"""
         from ircradio.factory import app
-        try:
-            listeners = await Radio.listeners()
-            if listeners:
-                msg = f"{listeners} client"
-                if listeners >= 2:
-                    msg += "s"
-                msg += " connected"
-                return await send_message(target, msg)
-            return await send_message(target, f"no listeners, much sad :((")
-        except Exception as ex:
-            app.logger.error(f"{ex}")
-            await send_message(target=target, message="Error")
+        radio_station = await Commands._parse_radio_station(args, target)
+        if not radio_station:
+            return
+
+        listeners = await radio_station.get_listeners()
+        if listeners is None:
+            return await send_message(target, f"something went wrong")
+        if listeners == 0:
+            await send_message(target, f"no listeners, much sad :((")
+
+        msg = f"{listeners} client"
+        if listeners >= 2:
+            msg += "s"
+        msg += " connected"
+        return await send_message(target, msg)
 
     @staticmethod
     async def queue(*args, target=None, nick=None, **kwargs):
         """show currently queued tracks"""
         from ircradio.models import Song
-        q: List[Song] = Radio.queues()
+        from ircradio.factory import app
+        radio_station = await Commands._parse_radio_station(args, target)
+        if not radio_station:
+            return
+
+        q: List[Song] = await radio_station.queue_get()
         if not q:
             return await send_message(target, "queue empty")
 
         for i, s in enumerate(q):
             await send_message(target, f"{s.utube_id} | {s.title}")
-            if i >= 12:
+            if i >= 8:
                 await send_message(target, "And some more...")
 
     @staticmethod
@@ -273,8 +352,8 @@ class Commands:
 
         for i in range(0, 5):
             song = random.choice(songs)
-
-            if Radio.queue(song):
+            res = await radio_default.queue(song.filepath)
+            if res:
                 return await send_message(target, f"A random {added_by} has appeared in the queue: {song.title}")
 
         await send_message(target, "queue_user exhausted!")
@@ -291,8 +370,11 @@ class Commands:
         except:
             pass
 
-        disk = os.popen(f"du -h {settings.dir_music}").read().split("\t")[0]
-        await send_message(target, f"Songs: {songs} | Disk: {disk}")
+        async with DU_LOCK:
+            disk = os.popen(f"du -h {settings.dir_music}").read().split("\t")[0]
+            mixes = os.popen(f"du -h /home/radio/mixes/").read().split("\n")[-2].split("\t")[0]
+
+        await send_message(target, f"Songs: {songs} | Mixes: {mixes} | Songs: {disk}")
 
     @staticmethod
     async def ban(*args, target=None, nick=None, **kwargs):
@@ -323,6 +405,45 @@ class Commands:
             await send_message(target, "admin")
         else:
             await send_message(target, "user")
+
+    @staticmethod
+    async def url(*args, target=None, nick=None, **kwargs):
+        radio_station = await Commands._parse_radio_station(args, target)
+        if not radio_station:
+            return
+
+        msg = f"https://{settings.icecast2_hostname}/{radio_station.mount_point}"
+        await send_message(target, msg)
+
+    @staticmethod
+    async def urls(*args, target=None, nick=None, **kwargs):
+        url = f"https://{settings.icecast2_hostname}/{radio_stations['wow'].mount_point}"
+        msg = f"main programming: {url}"
+        await send_message(target, msg)
+
+        msg = "mixes: "
+        for _, radio_station in radio_stations.items():
+            if _ == "wow":
+                continue
+            url = f"https://{settings.icecast2_hostname}/{radio_station.mount_point}"
+            msg += f"{url} "
+        await send_message(target, msg)
+
+    @staticmethod
+    async def _parse_radio_station(args, target) -> Optional[Station]:
+        extras = " ".join(args).strip()
+        if not extras or len(args) >= 2:
+            return radio_default
+
+        err = f", available streams: " + " ".join(radio_stations.keys())
+        if not extras:
+            msg = "nothing not found (?) :-P" + err
+            return await send_message(target, msg)
+        extra = extras.strip()
+        if extra not in radio_stations:
+            msg = f"station \"{extra}\" not found" + err
+            return await send_message(target, msg)
+        return radio_stations[extra]
 
 
 @bot.on('PRIVMSG')
@@ -370,7 +491,6 @@ async def message(nick, target, message, **kwargs):
             await attr(*spl, **data)
         except Exception as ex:
             app.logger.error(f"message_worker(): {ex}")
-            pass
 
 
 def start():
