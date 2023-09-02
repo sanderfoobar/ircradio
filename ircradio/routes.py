@@ -2,6 +2,7 @@
 # Copyright (c) 2021, dsc@xmr.pm
 
 import os, re, dataclasses, random
+from glob import glob
 from datetime import datetime
 from typing import Tuple, Optional
 from quart import request, render_template, abort, jsonify, send_from_directory, current_app, websocket, redirect, session, url_for
@@ -319,9 +320,10 @@ async def ws():
 async def assets_art(path: str):
     img_default = "album_art_default.jpg"
     _base = os.path.join(settings.cwd, "ircradio", "static")
+    mix_dirs = glob(settings.dir_mixes + "/*")
 
     try:
-        for _dirname in [settings.dir_meta, settings.dir_music]:
+        for _dirname in [settings.dir_meta, settings.dir_music, *mix_dirs]:
             _path = os.path.join(_dirname, path)
             if os.path.exists(_path):
                 return await send_from_directory(_dirname, path)

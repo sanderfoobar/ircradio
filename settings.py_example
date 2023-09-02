@@ -19,6 +19,8 @@ redis_uri = os.environ.get('REDIS_URI', 'redis://localhost:6379')
 
 dir_music = os.environ.get("DIR_MUSIC", os.path.join(cwd, "data", "music"))
 dir_meta = os.environ.get("DIR_MUSIC", os.path.join(cwd, "data", "music_metadata"))
+dir_mixes = "/home/radio/mixes/"
+
 if not os.path.exists(dir_music):
     os.mkdir(dir_music)
 if not os.path.exists(dir_meta):
