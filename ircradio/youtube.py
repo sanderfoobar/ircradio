@@ -33,8 +33,9 @@ class YouTube:
             raise Exception("Song already exists.")
 
         try:
+            path_yt_dlp = os.path.join(settings.cwd, "venv", "bin", "yt-dlp")
             proc = await asyncio.create_subprocess_exec(
-                *["yt-dlp",
+                *[path_yt_dlp,
                     "--add-metadata",
                     "--write-all-thumbnails",
                     "--write-info-json",
