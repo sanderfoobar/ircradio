@@ -76,4 +76,5 @@ class Radio:
             logging.error(ex)
             return b""
 
+        writer.close()
         return data
