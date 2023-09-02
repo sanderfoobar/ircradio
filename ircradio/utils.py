@@ -195,7 +195,7 @@ async def radio_update_task(sleep_secs) -> int:
     blob = {}
     radio_stations = list(settings.radio_stations.values())
     # radio_stations = radio_stations[1:]
-    radio_stations = radio_stations[:2]
+    # radio_stations = radio_stations[:2]
 
     for radio_station in radio_stations:
         radio_station.song = None
