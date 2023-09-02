@@ -11,6 +11,7 @@ def bool_env(val):
 
 debug = False
 host = "127.0.0.1"
+ws_url = "http://127.0.0.1:2600/ws"
 port = 2600
 timezone = "Europe/Amsterdam"
 

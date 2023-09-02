@@ -88,7 +88,7 @@
   var sel_radio_cards = {};
   var url_icecast = '{{ settings.icecast2_hostname }}';
   var url_album_art = '/assets/art/';
-  var ws_url = '{{ url_for('ws', _external=True) }}';
+  var ws_url = '{{ settings.ws_url }}';
 
   var icon_play = `
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="btn_audio_icon bi bi-play" viewBox="0 0 16 16">
