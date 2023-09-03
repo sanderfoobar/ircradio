@@ -12,6 +12,10 @@ button[data-playing="true"] { color: white; }
     color: #5586b7;
     border-color: #527ca8;
 }
+.bootstrap-table .search {
+  float: none !important;
+  width: 100% !important;
+}
 .card-header {padding: .5rem 1rem;}
 .card-header .font-weight-normal {font-size: 1.2rem;}
 .card-img-top {
