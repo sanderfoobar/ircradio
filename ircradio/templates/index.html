@@ -16,7 +16,7 @@
         <div class="card-body text-center">
           <h5 class="title_str card-title pricing-card-title text-muted">|</h5>
           <ul class="list-unstyled mt-3 mb-4">
-            <li class="listeners_str">0 listeners</li>
+            <li class="d-none listeners_str">0 listeners</li>
             <li class="progress_str text-muted">00:00 / 00:00</li>
           </ul>
 
@@ -186,6 +186,7 @@
       let blob = JSON.parse(data);
       radio_data = blob;
 
+      let listeners = 0;
       for (let radio_station of radio_station_ids) {
         if(!blob.hasOwnProperty(radio_station)) continue;
 
@@ -199,9 +200,16 @@
           }
 
           sel_radio_cards[rs.id].find('.title_str').text(song.title);
-          labelSetListeners(rs.id, rs.listeners);
+          //labelSetListeners(rs.id, rs.listeners);
+          listeners += rs.listeners;
           sel_radio_cards[rs.id].find('.progress_str').text(song.progress_str);
         }
+      }
+
+      if(listeners >= 1) {
+        $('p.lead').text(listeners_str(listeners));
+      } else {
+        $('p.lead').text('Enjoy the music :)');
       }
     }
 
