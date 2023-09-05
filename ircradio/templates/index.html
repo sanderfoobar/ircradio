@@ -7,8 +7,8 @@
 <div class="container">
   <div class="row">
     {% for rs in radio_stations %}
-      <div class="col-md-4 col-sm-6 col-xl-3">
-      <div data-radio="{{ rs.id }}" class="card box-shadow mb-4">
+      <div class="col-md-4 col-sm-6 col-xl-3 d-flex">
+      <div data-radio="{{ rs.id }}" class="card box-shadow mb-4 flex-fill">
         <div class="card-header">
           <h5 class="my-0 font-weight-normal">{{ rs.title }}</h5>
         </div>
@@ -19,7 +19,11 @@
             <li class="d-none listeners_str">0 listeners</li>
             <li class="progress_str text-muted">00:00 / 00:00</li>
           </ul>
-
+        </div>
+        <div class="card-footer">
+            <small class="footer d-block text-muted mt-3">{{ rs.description | safe }}</small>
+        </div>
+        <div class="card-footer">
           <button data-playing="false" data-url="{{ settings.icecast2_scheme + settings.icecast2_hostname + "/" + rs.mount_point }}" data-radio="{{ rs.id }}" type="button" class="btn btn-play btn-block btn-outline-primary mb-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="btn_audio_icon bi bi-play" viewBox="0 0 16 16">
               <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"></path>
@@ -50,7 +54,6 @@
 
           {% endif %}
 
-          <small class="footer d-block text-muted mt-3">{{ rs.description | safe }}</small>
         </div>
       </div>
       </div>
@@ -137,11 +140,11 @@
     _sel.find('.btn_audio_icon').remove();
 
     if(active) {
-      _sel.addClass('btn-primary');
+      _sel.addClass('btn-active');
       _sel.attr('data-playing', 'true');
       _sel.prepend(icon_stop);
     } else {
-      _sel.removeClass('btn-primary');
+      _sel.removeClass('btn-active');
       _sel.attr('data-playing', 'false');
       _sel.prepend(icon_play);
     }
