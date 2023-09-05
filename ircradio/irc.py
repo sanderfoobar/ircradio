@@ -192,7 +192,7 @@ class Commands:
             return await send_message(target, "No song(s) found!")
 
         if songs and needle_2nd:
-            songs = [s for s in songs if needle_2nd in s.title.lower()]
+            songs = [s for s in songs if s.title and needle_2nd in s.title.lower()]
 
         len_songs = len(songs)
         max_songs = 6

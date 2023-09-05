@@ -88,7 +88,7 @@ class Station:
         meta: dict = await Radio.icecast_metadata(self)
         if meta:
             meta_title = meta.get('title')
-            if meta_title.lower() in [' ', 'unknown', 'error', 'empty', 'bleepbloopblurp']:
+            if meta_title and meta_title.lower() in [' ', 'unknown', 'error', 'empty', 'bleepbloopblurp']:
                 meta_title = None
 
             if meta_title and len(songs) > 1 and songs:
