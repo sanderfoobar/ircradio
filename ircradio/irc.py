@@ -136,35 +136,32 @@ class Commands:
         if not args:
             await send_message(target=target, message="usage: !request <id>")
 
-        needle = " ".join(args)
-        try:
-            songs = Song.search(needle)
-        except Exception as ex:
-            return await send_message(target, f"{ex}")
-        if not songs:
-            return await send_message(target, "Not found!")
+        songs = await Commands._return_song_results(*args, target=target, nick=nick, **kwargs)
 
-        if len(songs) >= 2:
-            random.shuffle(songs)
-            await send_message(target, "Multiple found:")
-            for s in songs[:8]:
-                await send_message(target, f"{s.utube_id} | {s.title}")
-            return
+        if songs and len(songs) == 1:
+            song = songs[0]
+            await radio_default.queue_push(song.filepath)
+            msg = f"Added {song.title} to the queue"
 
-        song = songs[0]
-        await radio_default.queue_push(song.filepath)
-        msg = f"Added {song.title} to the queue"
+            return await send_message(target, msg)
 
-        return await send_message(target, msg)
+        if songs:
+            return await Commands._print_song_results(*args, target=target, nick=nick, songs=songs, **kwargs)
 
     @staticmethod
     async def search(*args, target=None, nick=None, **kwargs):
         from ircradio.models import Song
+        if not args:
+            return await send_message(target=target, message="usage: !search <id>")
+
         return await Commands._search(*args, target=target, nick=nick, **kwargs)
 
     @staticmethod
     async def searchq(*args, target=None, nick=None, **kwargs):
         from ircradio.models import Song
+        if not args:
+            return await send_message(target=target, message="usage: !searchq <id>")
+
         return await Commands._search(*args, target=target, nick=nick, report_quality=True, **kwargs)
 
     @staticmethod
@@ -172,10 +169,17 @@ class Commands:
         """search for a title"""
         from ircradio.models import Song
 
-        if not args:
-            return await send_message(target=target, message="usage: !search <id>")
-
         report_quality = kwargs.get('report_quality')
+
+        songs = await Commands._return_song_results(*args, target=target, nick=nick, **kwargs)
+
+        if songs:
+            return await Commands._print_song_results(*args, target=target, nick=nick, report_quality=report_quality, songs=songs, **kwargs)
+
+    @staticmethod
+    async def _return_song_results(*args, target=None, nick=None, **kwargs) -> Optional[List['Song']]:
+        from ircradio.models import Song
+
         needle = " ".join(args)
 
         # https://git.wownero.com/dsc/ircradio/issues/1
@@ -187,12 +191,24 @@ class Commands:
             needle = a
             needle_2nd = b
 
-        songs = Song.search(needle)
+        try:
+            songs = Song.search(needle)
+        except Exception as ex:
+            return await send_message(target, f"{ex}")
         if not songs:
             return await send_message(target, "No song(s) found!")
 
         if songs and needle_2nd:
             songs = [s for s in songs if s.title and needle_2nd in s.title.lower()]
+
+        if not songs:
+            return await send_message(target, "No song(s) found after '|'!")
+        
+        return songs
+
+    @staticmethod
+    async def _print_song_results(*args, target=None, nick=None, report_quality=None, songs=None, **kwargs):
+        from ircradio.models import Song
 
         len_songs = len(songs)
         max_songs = 6
