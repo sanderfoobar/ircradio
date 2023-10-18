@@ -121,6 +121,7 @@ class YouTube:
                 title = 'Unknown'
                 app.logger.warning(f"could not detect artist/title from metadata for {filepath}")
 
+        title = title if '-' in title else f"{artist} - {title}"
         return {
             "name": f"{title}",
             "data": metadata,
