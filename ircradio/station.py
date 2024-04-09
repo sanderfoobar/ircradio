@@ -173,15 +173,15 @@ class Station:
 
     @property
     def telnet_cmd_metadata(self):
-        return f"{self.mount_point}.metadata"
+        return f"{self.mount_point.replace('.', '_')}.metadata"
 
     @property
     def telnet_cmd_remaining(self):
-        return f"{self.mount_point}.remaining"
+        return f"{self.mount_point.replace('.', '_')}.remaining"
 
     @property
     def telnet_cmd_skip(self):
-        return f"{self.mount_point}.skip"
+        return f"{self.mount_point.replace('.', '_')}.skip"
 
     @property
     def stream_url(self):
