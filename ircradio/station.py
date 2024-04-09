@@ -61,10 +61,17 @@ class Station:
         # 4. check .ogg.json metadata file (Song.from_filepath)
         # 5. verify the above by comparing icecast metadata
 
-        liq_meta = await Radio.command(self.telnet_cmd_metadata)
-        liq_meta = liq_meta.decode(errors="ignore")
-        liq_filenames = re.findall(r"filename=\"(.*)\"", liq_meta)
-        liq_filenames = [fn for fn in liq_filenames if os.path.exists(fn)]
+        # find a better way to get current song
+        liq_filenames = []
+        from ircradio.factory import NP_MAP
+        np_uid = self.id
+        if np_uid == "main":
+            np_uid = "pmain"
+        elif np_uid == "wow":
+            np_uid = "pmain"
+
+        if np_uid in NP_MAP:
+            liq_filenames = [NP_MAP[np_uid]]
 
         liq_remaining = await Radio.command(self.telnet_cmd_remaining)
         liq_remaining = liq_remaining.decode(errors="ignore")

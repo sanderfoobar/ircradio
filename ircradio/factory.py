@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2021, dsc@xmr.pm
 
+import re
 import sys
 import collections
 from typing import List, Optional
@@ -29,6 +30,7 @@ irc_message_announce_bus = MultisubscriberQueue()
 websocket_status_bus_last_item: Optional[dict[str, Station]] = None
 irc_bot = None
 keycloak = None
+NP_MAP = {}  # station, filepath
 soap = Radio()
 
 
@@ -61,6 +63,7 @@ async def _setup_tasks(app: Quart):
 
     asyncio.create_task(last_websocket_item_updater())
     asyncio.create_task(irc_announce_task())
+    asyncio.create_task(_now_playing_watch())
 
 
 async def _setup_irc(app: Quart):
@@ -95,6 +98,29 @@ async def _setup_cache(app: Quart):
     app.config['SESSION_TYPE'] = 'redis'
     app.config['SESSION_URI'] = settings.redis_uri
     Session(app)
+
+
+async def _now_playing_watch():
+    global NP_MAP
+    proc = await asyncio.create_subprocess_exec(
+        "journalctl", "-n15000", "-xefu", "liquidsoap",
+        stdout=asyncio.subprocess.PIPE,
+    )
+
+    line = await proc.stdout.readline()
+    while line:
+        line = line.decode().strip()
+        if '] Prepared "/' in line and ".ogg" in line:
+            try:
+                filename = re.findall(r"\"(.*\.ogg)\"", line)[0]
+                radio = re.findall(r"\[(\w+)\:\d\]", line)[0]
+                if radio == "playlist":
+                    radio = "pmain"
+                NP_MAP[radio] = filename
+            except Exception as ex:
+                print(f"_now_playing_watch: {ex}")
+
+        line = await proc.stdout.readline()
 
 
 def create_app():
