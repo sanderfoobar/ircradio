@@ -180,7 +180,7 @@ class Station:
 
     @property
     def telnet_cmd_metadata(self):
-        return f"{self.mount_point.replace('.', '_')}.metadata"
+        return f"now_playing"
 
     @property
     def telnet_cmd_remaining(self):

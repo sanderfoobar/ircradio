@@ -1,7 +1,6 @@
 #!/usr/bin/liquidsoap
 set("log.stdout", true)
 set("log.file",false)
-#%include "cross.liq"
 
 # Allow requests from Telnet (Liquidsoap Requester)
 set("server.telnet", true)
@@ -121,55 +120,83 @@ pmain_crossed = mksafe(pmain_crossed)
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio",
+  send_icy_metadata=true, description="WOW!Radio",
   password = "lel", mount = "wow.ogg",
   pmain_crossed)
 
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Anjunadeep",
+  send_icy_metadata=true, description="WOW!Radio | Anjunadeep",
   password = "lel", mount = "anjunadeep.ogg",
   panjunadeep)
     
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Berlin",
+  send_icy_metadata=true, description="WOW!Radio | Berlin",
   password = "lel", mount = "berlin.ogg",
   pberlin)
     
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Breakbeat",
+  send_icy_metadata=true, description="WOW!Radio | Breakbeat",
   password = "lel", mount = "breaks.ogg",
   pbreaks)
     
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Dnb",
+  send_icy_metadata=true, description="WOW!Radio | Dnb",
   password = "lel", mount = "dnb.ogg",
   pdnb)
-    
+
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Raves",
-  password = "lel", mount = "raves.ogg",
-  praves)
-    
-
-output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
-  host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Trance",
+  send_icy_metadata=true, description="WOW!Radio | Trance",
   password = "lel", mount = "trance.ogg",
   ptrance)
     
 
 output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=164),
   host = "10.7.0.3", port = 24100,
-  icy_metadata="true", description="WOW!Radio | Weed",
+  send_icy_metadata=true, description="WOW!Radio | Weed",
   password = "lel", mount = "weed.ogg",
   pweed)
+
+output.icecast(%vorbis.cbr(samplerate=48000, channels=2, bitrate=128),
+  host = "10.7.0.3", port = 24100,
+  send_icy_metadata=true, description="WOW!Radio | Rave",
+  password = "lel", mount = "rave.ogg",
+  praves)
+
+
+def get_now_playing_filepaths(_)
+  def null_list(key, _list)
+    list.assoc.mem(key, _list) ? list.assoc(key, _list) : null()
+  end
+
+  pmain_meta = pmain.last_metadata() ?? []
+  panjunadeep_meta = panjunadeep.last_metadata() ?? []
+  pberlin_meta = pberlin.last_metadata() ?? []
+  pbreaks_meta = pbreaks.last_metadata() ?? []
+  pdnb_meta = pdnb.last_metadata() ?? []
+  praves_meta = praves.last_metadata() ?? []
+  ptrance_meta = ptrance.last_metadata() ?? []
+  pweed_meta = pweed.last_metadata() ?? []
+
+  pmain_filename = null_list("filename", pmain_meta)
+  panjunadeep_filename = null_list("filename", panjunadeep_meta)
+  pberlin_filename = null_list("filename", pberlin_meta)
+  pbreaks_filename = null_list("filename", pbreaks_meta)
+  pdnb_filename = null_list("filename", pdnb_meta)
+  praves_filename = null_list("filename", praves_meta)
+  ptrance_filename = null_list("filename", ptrance_meta)
+  pweed_filename = null_list("filename", pweed_meta)
+
+  "pmain_filename=#{pmain_filename}\npanjunadeep_filename=#{panjunadeep_filename}\npberlin_filename=#{pberlin_filename}\npbreaks_filename=#{pbreaks_filename}\npdnb_filename=#{pdnb_filename}\npraves_filename=#{praves_filename}\nptrance_filename=#{ptrance_filename}\npweed_filename=#{pweed_filename}\n"
+end
+
+server.register("now_playing", get_now_playing_filepaths)
